@@ -279,6 +279,10 @@
   background-color: #344054;
 }
 
+/* Table enhancements */
+@utility table-transition {
+  transition: all 0.2s ease-in-out;
+}
 
 
 @layer utilities {

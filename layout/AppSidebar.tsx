@@ -30,59 +30,67 @@ const navItems: NavItem[] = [
   {
     name: "Dashboard",
     icon: <LayoutDashboard size={18} />,
-    subItems: [{ name: "Ecommerce", path: "/" }],
+    // subItems: [{ name: "Ecommerce", path: "/" }],
+    path: "/"
   },
+  // {
+  //   name: "Calendar",
+  //   icon: <Calendar size={18} />,
+  //   path: "/calendar",
+  // },
+  // {
+  //   name: "User Profile",
+  //   icon: <User size={18} />,
+  //   path: "/profile",
+  // },
+  // {
+  //   name: "Forms",
+  //   icon: <List size={18} />,
+  //   subItems: [{ name: "Form Elements", path: "/form-elements" }],
+  // },
   {
-    name: "Calendar",
-    icon: <Calendar size={18} />,
-    path: "/calendar",
-  },
-  {
-    name: "User Profile",
-    icon: <User size={18} />,
-    path: "/profile",
-  },
-  {
-    name: "Forms",
-    icon: <List size={18} />,
-    subItems: [{ name: "Form Elements", path: "/form-elements" }],
-  },
-  {
-    name: "Tables",
+    name: "Common Table",
     icon: <Table size={18} />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables" }],
+    // subItems: [{ name: "Product Table", path: "/products" }],
+    path: "/common-table"
   },
-  {
-    name: "Pages",
-    icon: <FileText size={18} />,
-    subItems: [
-      { name: "Blank Page", path: "/blank" },
-      { name: "404 Error", path: "/error-404" },
-    ],
-  },
+  // {
+  //   name: "Tables",
+  //   icon: <Table size={18} />,
+  //   // subItems: [{ name: "Basic Tables", path: "/basic-tables" }],
+  //   path: "/basic-tables"
+  // },
+  // {
+  //   name: "Pages",
+  //   icon: <FileText size={18} />,
+  //   subItems: [
+  //     { name: "Blank Page", path: "/blank" },
+  //     { name: "404 Error", path: "/error-404" },
+  //   ],
+  // },
 ];
 
 const othersItems: NavItem[] = [
-  {
-    name: "Charts",
-    icon: <BarChart3 size={18} />,
-    subItems: [
-      { name: "Line Chart", path: "/line-chart" },
-      { name: "Bar Chart", path: "/bar-chart" },
-    ],
-  },
-  {
-    name: "UI Elements",
-    icon: <Boxes size={18} />,
-    subItems: [
-      { name: "Alerts", path: "/alerts" },
-      { name: "Avatar", path: "/avatars" },
-      { name: "Badge", path: "/badge" },
-      { name: "Buttons", path: "/buttons" },
-      { name: "Images", path: "/images" },
-      { name: "Videos", path: "/videos" },
-    ],
-  },
+  // {
+  //   name: "Charts",
+  //   icon: <BarChart3 size={18} />,
+  //   subItems: [
+  //     { name: "Line Chart", path: "/line-chart" },
+  //     { name: "Bar Chart", path: "/bar-chart" },
+  //   ],
+  // },
+  // {
+  //   name: "UI Elements",
+  //   icon: <Boxes size={18} />,
+  //   subItems: [
+  //     { name: "Alerts", path: "/alerts" },
+  //     { name: "Avatar", path: "/avatars" },
+  //     { name: "Badge", path: "/badge" },
+  //     { name: "Buttons", path: "/buttons" },
+  //     { name: "Images", path: "/images" },
+  //     { name: "Videos", path: "/videos" },
+  //   ],
+  // },
   {
     name: "Authentication",
     icon: <Plug size={18} />,
@@ -302,7 +310,7 @@ const AppSidebar: React.FC = () => {
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
-              <Image
+              {/* <Image
                 className="dark:hidden"
                 src="/images/logo/logo.svg"
                 alt="Logo"
@@ -315,15 +323,17 @@ const AppSidebar: React.FC = () => {
                 alt="Logo"
                 width={150}
                 height={40}
-              />
+              /> */}
+              <div className="font-medium text-2xl">CRM</div>
             </>
           ) : (
-            <Image
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
+            // <Image
+            //   src="/images/logo/logo-icon.svg"
+            //   alt="Logo"
+            //   width={32}
+            //   height={32}
+            // />
+            <div className="font-medium text-2xl">CRM</div>
           )}
         </Link>
       </div>
