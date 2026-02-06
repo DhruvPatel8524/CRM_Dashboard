@@ -49,11 +49,6 @@ const navItems: NavItem[] = [
   //   subItems: [{ name: "Form Elements", path: "/form-elements" }],
   // },
   {
-    name: "Product",
-    icon: <Table size={18} />,
-    path: "/product-table"
-  },
-  {
     name: "Dummy Table",
     icon: <Table size={18} />,
     path: "/dummy-table"

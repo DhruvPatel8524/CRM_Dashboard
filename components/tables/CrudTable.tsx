@@ -10,18 +10,16 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import { Pencil, Trash2, Eye, Plus, Search } from "lucide-react";
-import CrudModal from "./tableComponent/CrudModal";
-import Pagination from "./tableComponent/Pagination";
-import { TableItem, ModalData, FormData, ActionType } from "./tableComponent/types";
+import Pagination from "./Pagination";
 
 const ITEMS_PER_PAGE = 5;
 
-const initialData: TableItem[] = [
+/* TEMP DATA (will be replaced by DB later) */
+const dataFromDB = [
     {
         id: 1,
         name: "Demo",
         price: "999",
-        createdAt: "05-02-2025",
         createdBy: "Admin",
         updatedAt: "05-02-2025",
         updatedBy: "Admin",
@@ -31,7 +29,6 @@ const initialData: TableItem[] = [
         id: 2,
         name: "Demo",
         price: "999",
-        createdAt: "05-02-2025",
         createdBy: "Admin",
         updatedAt: "05-02-2025",
         updatedBy: "Admin",
@@ -41,8 +38,7 @@ const initialData: TableItem[] = [
         id: 3,
         name: "Demo",
         price: "999",
-        createdAt: "05-02-2025",
-        createdBy: "Admin",
+        createdBy: "User",
         updatedAt: "05-02-2025",
         updatedBy: "Admin",
         isActive: true,
@@ -51,7 +47,6 @@ const initialData: TableItem[] = [
         id: 4,
         name: "Demo",
         price: "999",
-        createdAt: "05-02-2025",
         createdBy: "User",
         updatedAt: "05-02-2025",
         updatedBy: "Admin",
@@ -61,7 +56,6 @@ const initialData: TableItem[] = [
         id: 5,
         name: "Demo",
         price: "999",
-        createdAt: "05-02-2025",
         createdBy: "User",
         updatedAt: "05-02-2025",
         updatedBy: "Admin",
@@ -71,7 +65,6 @@ const initialData: TableItem[] = [
         id: 6,
         name: "Demo",
         price: "999",
-        createdAt: "05-02-2025",
         createdBy: "User",
         updatedAt: "05-02-2025",
         updatedBy: "Admin",
@@ -80,26 +73,19 @@ const initialData: TableItem[] = [
 ];
 
 export default function CrudTable() {
-    const [data, setData] = useState<TableItem[]>(initialData);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
 
-    const [modalData, setModalData] = useState<ModalData>({
-        isOpen: false,
-        action: null,
-        item: null,
-    });
-
+    /* SIMPLE FILTER */
     const filteredData = useMemo(() => {
         const term = searchTerm.toLowerCase();
-
-        return data.filter(
+        return dataFromDB.filter(
             (item) =>
                 item.name.toLowerCase().includes(term) ||
                 item.price.toLowerCase().includes(term) ||
                 item.createdBy.toLowerCase().includes(term)
         );
-    }, [data, searchTerm]);
+    }, [searchTerm]);
 
     const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
@@ -107,62 +93,6 @@ export default function CrudTable() {
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         return filteredData.slice(start, start + ITEMS_PER_PAGE);
     }, [filteredData, currentPage]);
-
-    const openModal = (action: ActionType, item: TableItem | null = null) => {
-        setModalData({ isOpen: true, action, item });
-    };
-
-    const closeModal = () => {
-        setModalData({ isOpen: false, action: null, item: null });
-    };
-
-    const handleSave = (formData: FormData) => {
-        if (modalData.action === "add") {
-            setData((prev) => [
-                ...prev,
-                {
-                    id: Math.max(0, ...prev.map((i) => i.id)) + 1,
-                    name: formData.name,
-                    price: formData.price,
-                    createdAt: new Date().toISOString().split("T")[0],
-                    createdBy: "Current User",
-                    updatedAt: new Date().toISOString().split("T")[0],
-                    updatedBy: "Current User",
-                    isActive: formData.isActive,
-                },
-            ]);
-        }
-
-        if (modalData.action === "edit" && modalData.item) {
-            setData((prev) =>
-                prev.map((item) =>
-                    item.id === modalData.item!.id
-                        ? {
-                            ...item,
-                            name: formData.name,
-                            price: formData.price,
-                            isActive: formData.isActive,
-                            updatedAt: new Date().toISOString().split("T")[0],
-                            updatedBy: "Current User",
-                        }
-                        : item
-                )
-            );
-        }
-
-        closeModal();
-    };
-
-    const handleDelete = (id: number) => {
-        if (!window.confirm("Are you sure you want to delete this item?")) return;
-        setData((prev) => prev.filter((item) => item.id !== id));
-    };
-
-    const handlePageChange = (page: number) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-        }
-    };
 
     return (
         <div className="space-y-4">
@@ -175,7 +105,7 @@ export default function CrudTable() {
                     </span>
                     <input
                         type="text"
-                        placeholder="Search by name, price, or creator..."
+                        placeholder="Search..."
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
@@ -185,9 +115,8 @@ export default function CrudTable() {
                     />
                 </div>
 
-                {/* Add Button */}
+                {/* Add Button (NOT WORKING) */}
                 <button
-                    onClick={() => openModal("add")}
                     className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition-colors shadow-theme-sm whitespace-nowrap"
                 >
                     <Plus size={18} />
@@ -232,10 +161,10 @@ export default function CrudTable() {
                                         <TableCell className="px-4 py-3 font-medium text-gray-900 dark:text-white">
                                             {item.id}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 max-w-45 truncate">
+                                        <TableCell className="px-4 py-3">
                                             {item.name}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 font-medium">
+                                        <TableCell className="px-4 py-3">
                                             {item.price}
                                         </TableCell>
                                         <TableCell className="px-4 py-3">
@@ -248,31 +177,19 @@ export default function CrudTable() {
                                             {item.updatedBy}
                                         </TableCell>
                                         <TableCell className="px-4 py-3">
-                                            <Badge
-                                                size="sm"
-                                                color={item.isActive ? "success" : "error"}
-                                            >
-                                                {item.isActive ? "Active" : "Inactive"}
+                                            <Badge size="sm" color="success">
+                                                Active
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="px-4 py-3">
                                             <div className="flex justify-center gap-2">
-                                                <button
-                                                    onClick={() => openModal("view", item)}
-                                                    className="rounded-md p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-white/5"
-                                                >
+                                                <button className="rounded-md p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-white/5">
                                                     <Eye size={16} />
                                                 </button>
-                                                <button
-                                                    onClick={() => openModal("edit", item)}
-                                                    className="rounded-md p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10"
-                                                >
+                                                <button className="rounded-md p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10">
                                                     <Pencil size={16} />
                                                 </button>
-                                                <button
-                                                    onClick={() => handleDelete(item.id)}
-                                                    className="rounded-md p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
-                                                >
+                                                <button className="rounded-md p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
@@ -293,12 +210,13 @@ export default function CrudTable() {
                     </Table>
                 </div>
 
+                {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between border-t border-gray-100 dark:border-white/5 px-4 py-3">
                         <Pagination
                             currentPage={currentPage}
                             totalPages={totalPages}
-                            onPageChange={handlePageChange}
+                            onPageChange={setCurrentPage}
                         />
                         <span className="text-sm text-gray-500">
                             Page {currentPage} of {totalPages}
@@ -306,13 +224,6 @@ export default function CrudTable() {
                     </div>
                 )}
             </div>
-
-            {/* Modal */}
-            <CrudModal
-                modalData={modalData}
-                onClose={closeModal}
-                onSave={handleSave}
-            />
         </div>
     );
 }
