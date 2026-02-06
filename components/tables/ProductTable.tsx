@@ -79,7 +79,7 @@ const initialData: TableItem[] = [
     },
 ];
 
-export default function CrudTable() {
+export default function ProductTable() {
     const [data, setData] = useState<TableItem[]>(initialData);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);

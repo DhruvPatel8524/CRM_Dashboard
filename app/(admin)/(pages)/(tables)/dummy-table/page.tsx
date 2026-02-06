@@ -5,9 +5,9 @@ import CrudTable from "@/components/tables/CrudTable";
 export default function CommonTable() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="CRUD Operations" />
+            <PageBreadcrumb pageTitle="Table Stucture" />
             <div className="space-y-6">
-                <ComponentCard title="Product Management">
+                <ComponentCard title="Dummy Table (Title goes here)" desc="(Description goes here (optional))">
                     <CrudTable />
                 </ComponentCard>
             </div>
