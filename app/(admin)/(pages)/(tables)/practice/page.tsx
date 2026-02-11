@@ -1,14 +1,14 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
-import LeadTable from "@/components/tables/leads/LeadTable";
+import PracticeTable from "@/components/tables/practice/PracticeTable";
 
-export default function LeadTableMaiin() {
+export default function Practice() {
     return (
         <div>
             <PageBreadcrumb pageTitle="Leads" />
             <div className="space-y-6">
-                <ComponentCard title="Lead Records" desc="All the captured leads and their details.">
-                    <LeadTable />
+                <ComponentCard title="Lead Details" desc="Manage all the leads and their details.">
+                    <PracticeTable />
                 </ComponentCard>
             </div>
         </div>

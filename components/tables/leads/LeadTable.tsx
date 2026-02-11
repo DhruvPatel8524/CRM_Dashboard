@@ -148,13 +148,13 @@ function EmptyState() {
    4. TABLE COLUMN CONFIGURATION
    ============================================================ */
 
-type ColumnDef = {
-    key: string;
+type ColumnDef<T> = {
+    key: keyof T;
     label: string;
     hiddenBelow?: "sm" | "md" | "lg";
 };
 
-const columns: ColumnDef[] = [
+const columns: ColumnDef<Lead>[] = [
     { key: "id", label: "#" },
     { key: "leadName", label: "Name" },
     { key: "companyName", label: "Company" },
