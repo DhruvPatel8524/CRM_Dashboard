@@ -1,16 +1,16 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
-import LeadTable from "@/components/tables/leads/LeadTable";
+import DemoTable from "@/components/tables/demo/DemoTable";
 
 export default function LeadTableMaiin() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="Leads" />
+            <PageBreadcrumb pageTitle="Demo Table" />
             <div className="space-y-6">
-                <ComponentCard title="Lead Records" desc="All the captured leads and their details.">
-                    <LeadTable />
+                <ComponentCard title="Dummy Records" desc="This table is only for reference.">
+                    <DemoTable />
                 </ComponentCard>
             </div>
         </div>
     );
-}
+};

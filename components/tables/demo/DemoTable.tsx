@@ -1,27 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHeader,
-    TableRow,
-} from "../../ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow, } from "../../ui/table";
 import Badge from "../../ui/badge/Badge";
-import {
-    Pencil,
-    Trash2,
-    Plus,
-    Search,
-    AlertCircle,
-    ChevronDown,
-} from "lucide-react";
-import { error } from "console";
+import { Pencil, Trash2, Plus, Search, AlertCircle, ChevronDown, } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
+import Pagination from "../Pagination";
+
+const PAGE_SIZE = 5;
 
 type Lead = {
     id: number;
@@ -49,15 +38,89 @@ const columns: ColumnDef<Lead>[] = [
     { key: "companyName", label: "Company" },
     { key: "email", label: "Email" },
     { key: "phone", label: "Phone" },
-    { key: "status", label: "Status" },
-    { key: "source", label: "Source" },
+    {
+        key: "status",
+        label: "Status",
+        render: (value) => getStatusBadge(String(value)),
+    },
+    {
+        key: "source",
+        label: "Source",
+        render: (value) => getSourceBadge(String(value)),
+    },
     { key: "assignedTo", label: "Assigned To" },
     { key: "createdAt", label: "Created" },
     { key: "updatedAt", label: "Updated" },
-    { key: "isActive", label: "Active", render: (value) => value ? "Active" : "Inactive" },
+    // { key: "isActive", label: "Active", render: (value) => value ? "Active" : "Inactive" },
 ];
 
-export default function PracticeTable() {
+function TableSkeleton() {
+    return (
+        <div className="space-y-3 p-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 animate-pulse">
+                    <div className="h-4 w-8 rounded bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-4 w-28 rounded bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700 hidden md:block" />
+                    <div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 hidden md:block" />
+                    <div className="h-4 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+                    <div className="ml-auto h-4 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+                </div>
+            ))}
+        </div>
+    );
+};
+
+function EmptyState() {
+    return (
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 mb-4">
+                <AlertCircle size={24} className="text-gray-400 dark:text-gray-500" />
+            </div>
+            <h4 className="text-sm font-medium text-heading mb-1">
+                No data found
+            </h4>
+            <p className="text-xs text-muted text-center max-w-[260px]">
+                There are no leads to display. Add a new lead to get started.
+            </p>
+        </div>
+    );
+};
+
+function getStatusBadge(status: string) {
+    const normalized = status?.toLowerCase() ?? "";
+
+    if (normalized === "new" || normalized === "open")
+        return <Badge size="sm" color="info">{status}</Badge>;
+
+    if (normalized === "contacted" || normalized === "in progress")
+        return <Badge size="sm" color="primary">{status}</Badge>;
+
+    if (normalized === "qualified" || normalized === "converted")
+        return <Badge size="sm" color="success">{status}</Badge>;
+
+    if (normalized === "lost" || normalized === "closed")
+        return <Badge size="sm" color="error">{status}</Badge>;
+
+    if (normalized === "follow up" || normalized === "pending")
+        return <Badge size="sm" color="warning">{status}</Badge>;
+
+    return <Badge size="sm" color="light">{status || "—"}</Badge>;
+};
+
+function getSourceBadge(source: string) {
+    if (!source) return <span className="text-muted">—</span>;
+
+    return (
+        <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-400">
+            {source}
+        </span>
+    );
+};
+
+export default function DemoTable() {
+    const [isLoading, setIsLoading] = useState(true);
     const [leads, setLeads] = useState<Lead[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState<"add" | "edit" | "delete">("add");
@@ -71,8 +134,14 @@ export default function PracticeTable() {
         assignedTo: "",
     });
     const [selectedRowId, setSelectedRowId] = useState<Lead | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const fetchLeads = () => {
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = () => {
         fetch("https://localhost:44302/api/Lead/GetAll", {
             method: "POST",
         })
@@ -84,15 +153,13 @@ export default function PracticeTable() {
             })
             .then((data) => {
                 setLeads(data);
+                setIsLoading(false);
             })
-            .catch((error) => console.error(error));
+            .catch((error) => console.error(error))
+            .finally(() => setIsLoading(false));
     };
 
-    useEffect(() => {
-        fetchLeads();
-    }, []);
-
-    const opneModal = (type: "add" | "edit" | "delete", lead?: Lead) => {
+    const openModal = (type: "add" | "edit" | "delete", lead?: Lead) => {
         setModalType(type);
         setSelectedRowId(lead ?? null);
 
@@ -142,7 +209,7 @@ export default function PracticeTable() {
                 return response.json();
             })
             .then(() => {
-                fetchLeads();
+                fetchData();
                 closeModal();
             })
             .catch((error) => {
@@ -167,7 +234,7 @@ export default function PracticeTable() {
                 return response.json();
             })
             .then(() => {
-                fetchLeads();
+                fetchData();
                 closeModal();
             })
             .catch((error) => {
@@ -192,7 +259,7 @@ export default function PracticeTable() {
                 return response.json();
             })
             .then(() => {
-                fetchLeads();
+                fetchData();
                 closeModal();
             })
             .catch((error) => {
@@ -200,12 +267,53 @@ export default function PracticeTable() {
             });
     };
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    const filteredDetails = useMemo(() => {
+        if (!searchTerm.trim()) return leads;
+
+        const term = searchTerm.toLowerCase();
+        return leads.filter((lead) =>
+            lead.leadName?.toLowerCase().includes(term) ||
+            lead.companyName?.toLowerCase().includes(term) ||
+            lead.email?.toLowerCase().includes(term) ||
+            lead.phone?.toLowerCase().includes(term) ||
+            lead.status?.toLowerCase().includes(term) ||
+            lead.source?.toLowerCase().includes(term) ||
+            lead.assignedTo?.toLowerCase().includes(term)
+        );
+    }, [leads, searchTerm]);
+
+    const totalPages = Math.ceil(filteredDetails.length / PAGE_SIZE);
+
+    const paginatedData = useMemo(() => {
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        return filteredDetails.slice(start, end);
+    }, [currentPage, filteredDetails]);
+
     return (
         <div className="space-y-4">
             {/* Search bar and Add button */}
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 justify-between">
+                <div className="relative flex-1 max-w-md">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <Search size={16} className="text-gray-400 dark:text-gray-500" />
+                    </span>
+                    <input
+                        type="text"
+                        placeholder="Search leads..."
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                        }}
+                        className="h-10 w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-gray-500 dark:focus:border-brand-800 xl:w-[320px]"
+                    />
+                </div>
                 <button
-                    onClick={() => opneModal("add")}
+                    onClick={() => openModal("add")}
                     className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 active:bg-brand-700 transition-colors shadow-theme-xs whitespace-nowrap">
                     <Plus size={16} strokeWidth={2.5} />
                     <span>Add Lead</span>
@@ -213,62 +321,80 @@ export default function PracticeTable() {
             </div>
 
             {/* Table */}
-            <div className="table-card overflow-x-auto">
-                <Table>
-                    <TableHeader className="border-b border-gray-100 dark:border-gray-800">
-                        <TableRow>
-                            {columns.map((column) => (
-                                <TableCell
-                                    isHeader
-                                    key={column.key}
-                                    className="table-header-cell">
-                                    {column.label}
-                                </TableCell>
-                            ))}
-                            <TableCell
-                                isHeader
-                                className="table-header-cell table-sticky-col border-l border-gray-100 dark:border-gray-800 text-center w-[100px]">
-                                Actions
-                            </TableCell>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {leads.map((lead) => (
-                            <TableRow
-                                key={lead.id}
-                                className="table-row-hover group">
+            <div className="table-card overflow-x-auto custom-scrollbar">
+                {isLoading ? (
+                    <TableSkeleton />
+                ) : paginatedData.length === 0 ? (
+                    <EmptyState />
+                ) : (
+                    <Table>
+                        <TableHeader className="border-b border-gray-100 dark:border-gray-800">
+                            <TableRow>
                                 {columns.map((column) => (
                                     <TableCell
-                                        key={String(column.key)}
-                                        className="table-body-cell">
-                                        {column.render ? column.render(lead[column.key], lead) : lead[column.key] == null ? "-" : lead[column.key]}
+                                        isHeader
+                                        key={column.key}
+                                        className="table-header-cell">
+                                        {column.label}
                                     </TableCell>
                                 ))}
-                                <TableCell className="table-body-cell table-sticky-col border-l border-gray-100 dark:border-gray-800">
-                                    <div className="flex items-center justify-center gap-1">
-                                        <button
-                                            onClick={() => opneModal("edit", lead)}
-                                            className="rounded-lg p-2 text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
-                                            title="Edit lead">
-                                            <Pencil size={15} />
-                                        </button>
-                                        <button
-                                            onClick={() => opneModal("delete", lead)}
-                                            className="rounded-lg p-2 text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors"
-                                            title="Delete lead">
-                                            <Trash2 size={15} />
-                                        </button>
-                                    </div>
+                                <TableCell
+                                    isHeader
+                                    className="table-header-cell table-sticky-col border-l border-gray-100 dark:border-gray-800 text-center w-[100px]">
+                                    Actions
                                 </TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            {paginatedData.map((lead) => (
+                                <TableRow
+                                    key={lead.id}
+                                    className="table-row-hover group">
+                                    {columns.map((column) => (
+                                        <TableCell
+                                            key={String(column.key)}
+                                            className="table-body-cell">
+                                            {column.render ? column.render(lead[column.key], lead) : lead[column.key] == null ? "-" : lead[column.key]}
+                                        </TableCell>
+                                    ))}
+                                    <TableCell className="table-body-cell table-sticky-col border-l border-gray-100 dark:border-gray-800">
+                                        <div className="flex items-center justify-center gap-1">
+                                            <button
+                                                onClick={() => openModal("edit", lead)}
+                                                className="rounded-lg p-2 text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
+                                                title="Edit lead">
+                                                <Pencil size={15} />
+                                            </button>
+                                            <button
+                                                onClick={() => openModal("delete", lead)}
+                                                className="rounded-lg p-2 text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors"
+                                                title="Delete lead">
+                                                <Trash2 size={15} />
+                                            </button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
             </div>
 
             {/* Pagination */}
-            <div>
-            </div>
+            {totalPages > 1 && (
+                <div className="flex justify-between items-center">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => {
+                            if (page >= 1 && page <= totalPages) {
+                                setCurrentPage(page);
+                            }
+                        }}
+                    />
+                    <p>Showing {(currentPage - 1) * PAGE_SIZE + 1} to {Math.min(currentPage * PAGE_SIZE, leads.length)} of {filteredDetails.length} results</p>
+                </div>
+            )}
 
             {/* Modal */}
             <Modal
